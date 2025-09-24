@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import 'express-async-errors';
 import bodyParser from 'body-parser';
 
@@ -8,8 +8,7 @@ import { currentUserRouter } from './routes/current-user';
 import { signinRouter } from './routes/signin';
 import { signupRouter } from './routes/signup';
 import { signoutRouter } from './routes/signout';
-import { errorHandler } from './middlewares/error-handler';
-import { NotFoundError } from './errors/not-found-error';
+import { errorHandler, NotFoundError } from '@awatickets/common';
 
 
 const app = express();
@@ -36,6 +35,6 @@ app.all('*', async (req, res, next) => {
 );
 
 
-app.use(errorHandler);
+app.use(errorHandler as any);
 
 export { app };
