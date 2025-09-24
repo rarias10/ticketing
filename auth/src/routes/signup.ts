@@ -1,11 +1,9 @@
 import express, { Request, Response } from 'express';
 import { body } from 'express-validator';
 import jwt from 'jsonwebtoken';
-import { validateRequest } from '../middlewares/validate-request';
+import { validateRequest, DatabaseConnectionError, BadRequestError } from '@awatickets/common';
 
 import { User } from '../models/user';
-import { DatabaseConnectionError } from '../errors/database-connection-error';
-import { BadRequestError } from '../errors/bad-request-error';
 
 const router = express.Router();
 
@@ -17,7 +15,7 @@ router.post('/api/users/signup', [
     .trim()
     .isLength({ min: 4, max: 20 })
     .withMessage('Password must be between 4 and 20 characters')
-], validateRequest,
+], validateRequest as any,
  async (req: Request, res: Response ) => {
   
   const { email, password } = req.body;
