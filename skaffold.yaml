@@ -24,4 +24,11 @@ build:
         manual:
           - src: '**/*.js'
             dest: .
-          
+    - image: rarias1082/tickets
+      context: tickets
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: 'src/**/*.ts'
+            dest: .
