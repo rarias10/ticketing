@@ -1,28 +1,34 @@
 import express, { Request, Response } from 'express';
 import { body } from 'express-validator';
-import { requireAuth, validateRequest } from '@awatickets/common';
+import { requireAuth, validateRequest, NotFoundError } from '@awatickets/common';
 import { Ticket } from '../models/ticket';
 
 const router = express.Router();
 
-router.post('/api/tickets', requireAuth as any, [
+router.put('/api/tickets/:id', requireAuth as any, [
   body('title')
-    .not()
+    .not()  
     .isEmpty()
     .withMessage('Title is required'),
   body('price')
     .isFloat({ gt: 0 })
     .withMessage('Price must be greater than 0')
 ], validateRequest as any, async (req: Request, res: Response) => {
+  const ticket = await Ticket.findById(req.params.id);
+  if (!ticket) {
+    throw new NotFoundError();
+  }
+  if (ticket.userId !== req.currentUser!.id) {
+   return res.status(401).send();
+  }
   const { title, price } = req.body;
-
-  const ticket = Ticket.build({
-    title,
-    price,
-    userId: req.currentUser!.id
+  ticket.set({
+    title,  
+    price
   });
   await ticket.save();
-  res.status(201).send(ticket);
+  res.send(ticket);
 });
 
-export { router as createTicketRouter };
+export { router as updateTicketRouter };
+
