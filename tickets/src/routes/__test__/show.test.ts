@@ -3,6 +3,7 @@ import { app } from '../../app'
 import { Ticket } from '../../models/ticket';
 import mongoose from 'mongoose';
 
+
 it('fetches the ticket', async () => {
   const ticket = Ticket.build({
     title: 'Concert',

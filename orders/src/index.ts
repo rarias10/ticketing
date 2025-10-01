@@ -41,7 +41,7 @@ const start = async () => {
     console.error(err);
   }
   app.listen(port, () => {
-    console.log(`Tickets service listening on port ${port} !!!!!!!!!!!`);
+    console.log(`Orders service listening on port ${port} !!!!!!!!!!!`);
   });
 };
 

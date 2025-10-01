@@ -1,6 +1,7 @@
 import request from 'supertest';
 import { app } from '../../app'
 import { Ticket } from '../../models/ticket';
+import { natsWrapper } from '../../nats-wrapper';
 
 
 it('has a route handler listening to /api/tickets for post requests', async () => {
@@ -76,4 +77,26 @@ it('creates a ticket with valid inputs', async () => {
   
 });
 
-/* Removed local expect function to avoid conflict with Jest's expect */
+it('publishes an event', async () => {
+  let tickets = await Ticket.find({});
+  expect(tickets.length).toEqual(0);
+  
+  const response = await request(app)
+    .post('/api/tickets')
+    .set('Cookie', global.signin())
+    .send({
+      title: 'Valid Title',
+      price: 20
+    }); 
+    
+  expect(response.status).toEqual(201);
+  expect(response.body.title).toEqual('Valid Title');
+  expect(response.body.price).toEqual(20);  
+  expect(natsWrapper.client.publish).toHaveBeenCalled();
+
+  tickets = await Ticket.find({});
+  expect(tickets.length).toEqual(1);
+  expect(tickets[0].title).toEqual('Valid Title');
+  expect(tickets[0].price).toEqual(20); 
+
+}); 
