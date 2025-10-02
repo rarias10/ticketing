@@ -1,16 +1,19 @@
 import mongoose from "mongoose";
+import { OrderStatus } from "@awatickets/common";
+import { TicketDoc } from "./ticket";
 
+export { OrderStatus };
 
 interface OrderAttrs {
   userId: string;
-  status: 'created' | 'cancelled' | 'completed';
+  status: OrderStatus;
   expiresAt: Date;
   ticket: TicketDoc;
 } 
 
 interface OrderDoc extends mongoose.Document {
   userId: string;
-  status: 'created' | 'cancelled' | 'completed';
+  status: OrderStatus;
   expiresAt: Date;
   ticket: TicketDoc;
 } 
@@ -27,8 +30,8 @@ const orderSchema = new mongoose.Schema({
   status: {
     type: String,
     required: true,
-    enum: ['created', 'cancelled', 'completed'],
-    default: 'created'
+    enum: Object.values(OrderStatus),
+    default: OrderStatus.Created
   },
   expiresAt: {
     type: mongoose.Schema.Types.Date,
@@ -36,14 +39,13 @@ const orderSchema = new mongoose.Schema({
   ticket: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Ticket'
-  },
-  {
-    toJSON: {
-      transform(doc, ret) {
-        ret.id = ret._id;
-        delete ret._id;
-      } 
-    }
+  }
+}, {
+  toJSON: {
+    transform(doc, ret: any) {
+      ret.id = ret._id;
+      delete ret._id;
+    } 
   }
 });
 
