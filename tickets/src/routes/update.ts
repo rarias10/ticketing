@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import { body } from 'express-validator';
-import { requireAuth, validateRequest, NotFoundError } from '@awatickets/common';
+import { requireAuth, validateRequest, NotFoundError, BadRequestError } from '@awatickets/common';
 import { Ticket } from '../models/ticket';
 import { TicketUpdatedPublisher } from '../events/publishers/ticket-updated-publisher';
 import { natsWrapper } from '../nats-wrapper';
@@ -17,12 +17,19 @@ router.put('/api/tickets/:id', requireAuth as any, [
     .withMessage('Price must be greater than 0')
 ], validateRequest as any, async (req: Request, res: Response) => {
   const ticket = await Ticket.findById(req.params.id);
+
   if (!ticket) {
     throw new NotFoundError();
   }
+
+  if(ticket.orderId) {
+    throw new BadRequestError('Cannot edit a reserved ticket');
+  }
+
   if (ticket.userId !== req.currentUser!.id) {
    return res.status(401).send();
   }
+
   const { title, price } = req.body;
   ticket.set({
     title,  
@@ -35,7 +42,8 @@ router.put('/api/tickets/:id', requireAuth as any, [
     id: ticket.id,
     title: ticket.title,
     price: ticket.price,
-    userId: ticket.userId
+    userId: ticket.userId,
+    version: ticket.version
   });
 
 

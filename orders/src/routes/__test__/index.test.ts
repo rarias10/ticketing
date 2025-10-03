@@ -1,24 +1,27 @@
 import request from 'supertest';
 import { app } from '../../app'
 import { Ticket } from '../../models/ticket';
-import mongoose from 'mongoose';
+import mongoose from 'mongoose';  
 import { natsWrapper } from '../../nats-wrapper'; // Import natsWrapper
 
 it('fetches orders for a particular user', async () => {
   // Create three tickets
   const ticketOne = Ticket.build({  
+    id: new mongoose.Types.ObjectId().toHexString(),
     title: 'concert 1',
     price: 20
   });
   await ticketOne.save(); 
 
   const ticketTwo = Ticket.build({
+    id: new mongoose.Types.ObjectId().toHexString(),
     title: 'concert 2',
     price: 30
   });
   await ticketTwo.save();
 
   const ticketThree = Ticket.build({
+    id: new mongoose.Types.ObjectId().toHexString(),
     title: 'concert 3',
     price: 40
   });
