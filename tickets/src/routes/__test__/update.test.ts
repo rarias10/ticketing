@@ -36,6 +36,9 @@ it('returns a 401 if the user does not own the ticket', async () => {
       price: 20
     });
   const ticket = await Ticket.findById(response.body.id);
+   if (!ticket) {
+    throw new Error('Ticket not found');
+  }
   await request(app)
     .put(`/api/tickets/${ticket.id}`)
     .set('Cookie', global.signin())
@@ -57,6 +60,9 @@ it('returns a 400 if the user provides an invalid title or price', async () => {
     });
     
   const ticket = await Ticket.findById(response.body.id);
+   if (!ticket) {
+    throw new Error('Ticket not found');
+  }
 
   await request(app)  
     .put(`/api/tickets/${ticket.id}`)
@@ -89,6 +95,10 @@ it('updates the ticket provided valid inputs', async () => {
 
   const ticket = await Ticket.findById(response.body.id);
 
+  if (!ticket) {
+    throw new Error('Ticket not found');
+  }
+
   await request(app)
     .put(`/api/tickets/${ticket.id}`)
     .set('Cookie', cookie)
@@ -119,6 +129,10 @@ it('publishes an event', async () => {
     }); 
   const ticket = await Ticket.findById(response.body.id);
 
+   if (!ticket) {
+    throw new Error('Ticket not found');
+  }
+
   await request(app)  
     .put(`/api/tickets/${ticket.id}`)
     .set('Cookie', cookie)
@@ -128,4 +142,33 @@ it('publishes an event', async () => {
     })  
     .expect(200); 
   expect(natsWrapper.client.publish).toHaveBeenCalled();
+}); 
+
+it('rejects updates if the ticket is reserved', async () => {
+  const cookie = global.signin();
+  const response = await request(app)
+    .post('/api/tickets')
+    .set('Cookie', cookie)
+    .send({
+      title: 'Concert',
+      price: 20
+    });
+  const ticket = await Ticket.findById(response
+    .body.id);
+
+  if (!ticket) {
+    throw new Error('Ticket not found');
+  }
+
+  ticket.set({ orderId: new mongoose.Types.ObjectId().toHexString() });
+  await ticket.save();  
+  
+  await request(app)
+    .put(`/api/tickets/${ticket.id}`)
+    .set('Cookie', cookie)
+    .send({
+      title: 'Updated Concert',
+      price: 100
+    })
+    .expect(400);
 }); 

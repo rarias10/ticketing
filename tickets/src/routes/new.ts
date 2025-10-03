@@ -34,7 +34,8 @@ router.post('/api/tickets', requireAuth as any, [
         id: ticket.id,
         title: ticket.title,
         price: ticket.price,
-        userId: ticket.userId
+        userId: ticket.userId,
+        version: ticket.version
       });
     } catch (error) {
       console.error('Failed to publish ticket created event:', error);
