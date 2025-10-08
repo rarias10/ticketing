@@ -2,11 +2,11 @@ import axios from 'axios';
 
 export default ({ req }) => {
   if (typeof window === 'undefined') {
-    // Server-side request - use ingress controller
+    // Server-side request - use purchased domain
     return axios.create({
-      baseURL: 'http://ingress-nginx-controller.ingress-nginx.svc.cluster.local',
+      baseURL: 'http://www.basquiat.app',
       headers: {
-        Host: 'ticketing.dev',
+        Host: 'www.basquiat.app',
         ...req.headers
       }
     });

@@ -13,8 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       KOPS_CLUSTER_NAME: kubevpro.basquiat.app
-      KOPS_STATE_STORE: s3://kops-state-store
-      AWS_REGION: us-east-1
+      KOPS_STATE_STORE: s3://kopsstate1357
+      AWS_REGION: us-east-2
 
     steps:
       - name: Checkout code
