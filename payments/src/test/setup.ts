@@ -5,9 +5,6 @@ import { app } from '../app';
 import jwt from 'jsonwebtoken';
 
 declare global {
-  var beforeAll: any;
-  var beforeEach: any;
-  var afterAll: any;
   function signin(id?: string): string[];
 }
 
