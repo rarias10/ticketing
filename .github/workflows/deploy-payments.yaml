@@ -32,7 +32,7 @@ jobs:
 
       - name: Configure kubectl for Kops cluster
         run: |
-          kops export kubecfg --name=${KOPS_CLUSTER_NAME} --state=${KOPS_STATE_STORE}
+          kops export kubecfg --name=${KOPS_CLUSTER_NAME} --state=${KOPS_STATE_STORE} --admin
 
       - name: Set image tag
         id: vars
