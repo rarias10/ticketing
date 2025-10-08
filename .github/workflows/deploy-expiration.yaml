@@ -27,6 +27,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Setup Kops and Kubectl
+        uses: ./.github/actions/setup-kops
+
       - name: Configure kubectl for Kops cluster
         run: |
           kops export kubecfg --name=${KOPS_CLUSTER_NAME} --state=${KOPS_STATE_STORE}
