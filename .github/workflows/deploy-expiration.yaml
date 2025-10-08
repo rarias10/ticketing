@@ -1,11 +1,11 @@
-name: deploy-auth
+name: deploy-expiration
 
 on:
   push:
     branches:
       - master
     paths:
-      - "auth/**"
+      - "expiration/**"
   workflow_dispatch:
 
 jobs:
@@ -36,7 +36,7 @@ jobs:
         run: echo "TAG=$(echo ${GITHUB_SHA} | cut -c1-7)" >> $GITHUB_ENV
 
       - name: Build Docker image
-        run: cd auth && docker build -t rarias1082/auth:${TAG} .
+        run: cd expiration && docker build -t rarias1082/expiration:${TAG} .
 
       - name: Login to Docker Hub
         run: docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
@@ -46,11 +46,11 @@ jobs:
 
       - name: Push Docker image
         run: |
-          docker push rarias1082/auth:${TAG}
-          docker tag rarias1082/auth:${TAG} rarias1082/auth:latest
-          docker push rarias1082/auth:latest
+          docker push rarias1082/expiration:${TAG}
+          docker tag rarias1082/expiration:${TAG} rarias1082/expiration:latest
+          docker push rarias1082/expiration:latest
 
       - name: Deploy to Kubernetes
         run: |
-          kubectl set image deployment/auth-depl auth=rarias1082/auth:${TAG}
-          kubectl rollout status deployment/auth-depl
+          kubectl set image deployment/expiration-depl expiration=rarias1082/expiration:${TAG}
+          kubectl rollout status deployment/expiration-depl

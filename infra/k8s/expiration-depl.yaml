@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: expiration
-          image: rarias1082/expiration
+          image: rarias1082/expiration:latest
           env:
             - name: NATS_URL
               value: 'http://nats-srv:4222'

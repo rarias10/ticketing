@@ -1,0 +1,66 @@
+name: deploy-manifests
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "infra/k8s/**"
+  workflow_dispatch:
+
+jobs:
+  deploy-manifests:
+    runs-on: ubuntu-latest
+    env:
+      KOPS_CLUSTER_NAME: kubevpro.basquiat.app
+      KOPS_STATE_STORE: s3://kops-state-store
+      AWS_REGION: us-east-1
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Configure kubectl for Kops cluster
+        run: |
+          kops export kubecfg --name=${KOPS_CLUSTER_NAME} --state=${KOPS_STATE_STORE}
+
+      - name: Deploy Kubernetes manifests
+        run: |
+          echo "Applying Kubernetes manifests..."
+          kubectl apply -f infra/k8s/ && kubectl apply -f infra/k8s-prod/
+
+      - name: Force restart deployments to pull latest images
+        run: |
+          echo "Restarting deployments to ensure latest images are pulled..."
+          kubectl rollout restart deployment/auth-depl || true
+          kubectl rollout restart deployment/client-depl || true
+          kubectl rollout restart deployment/tickets-depl || true
+          kubectl rollout restart deployment/orders-depl || true
+          kubectl rollout restart deployment/payments-depl || true
+          kubectl rollout restart deployment/expiration-depl || true
+
+      - name: Wait for deployments to be ready
+        run: |
+          echo "Waiting for deployments to be ready..."
+          kubectl wait --for=condition=available --timeout=300s deployment/auth-depl || true
+          kubectl wait --for=condition=available --timeout=300s deployment/client-depl || true
+          kubectl wait --for=condition=available --timeout=300s deployment/tickets-depl || true
+          kubectl wait --for=condition=available --timeout=300s deployment/orders-depl || true
+          kubectl wait --for=condition=available --timeout=300s deployment/payments-depl || true
+          kubectl wait --for=condition=available --timeout=300s deployment/expiration-depl || true
+
+      - name: Verify deployment status
+        run: |
+          echo "Checking deployment status..."
+          kubectl get deployments
+          kubectl get services
+          kubectl get pods
+          echo "Checking ingress..."
+          kubectl get ingress

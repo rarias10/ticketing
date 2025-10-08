@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: orders
-          image: rarias1082/orders
+          image: rarias1082/orders:latest
           env:
             - name: NATS_URL
               value: 'http://nats-srv:4222'

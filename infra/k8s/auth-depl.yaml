@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: auth
-          image: rarias1082/auth:v1.0.0
+          image: rarias1082/auth:latest
           env:
             - name: MONGO_URI
               value: 'mongodb://auth-mongo-srv:27017/auth'
