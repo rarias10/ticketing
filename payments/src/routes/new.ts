@@ -50,7 +50,7 @@ router.post('/api/payments', requireAuth as any,
       stripeId: payment.stripeId
     });
 
-    res.status(204).send({ id: payment.id});
+    res.status(201).send({ id: payment.id});
 
   }
 );
