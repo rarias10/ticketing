@@ -30,13 +30,40 @@ jobs:
       - name: Setup Kops and Kubectl
         uses: ./.github/actions/setup-kops
 
+      - name: Validate Kops cluster exists
+        run: |
+          echo "Checking if Kops cluster exists..."
+          if kops get cluster --name=${KOPS_CLUSTER_NAME} --state=${KOPS_STATE_STORE}; then
+            echo "✅ Kops cluster found: ${KOPS_CLUSTER_NAME}"
+          else
+            echo "❌ Kops cluster not found: ${KOPS_CLUSTER_NAME}"
+            echo "Please ensure your Kops cluster is created and accessible"
+            echo "Run: kops create cluster --name=${KOPS_CLUSTER_NAME} --state=${KOPS_STATE_STORE} --zones=us-east-2a,us-east-2b,us-east-2c"
+            exit 1
+          fi
+
       - name: Configure kubectl for Kops cluster
         run: |
+          echo "Configuring kubectl for Kops cluster..."
+          echo "Cluster: ${KOPS_CLUSTER_NAME}"
+          echo "State Store: ${KOPS_STATE_STORE}"
+          echo "Region: ${AWS_REGION}"
+
+          # Export kubecfg and validate
           kops export kubecfg --name=${KOPS_CLUSTER_NAME} --state=${KOPS_STATE_STORE}
+
+          # Verify kubectl can connect
+          echo "Testing kubectl connection..."
+          kubectl cluster-info
+          kubectl get nodes
 
       - name: Deploy Kubernetes manifests
         run: |
           echo "Applying Kubernetes manifests..."
+          echo "Current kubectl context:"
+          kubectl config current-context
+
+          # Apply manifests
           kubectl apply -f infra/k8s-prod/
 
       - name: Force restart deployments to pull latest images
