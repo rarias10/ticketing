@@ -49,12 +49,44 @@ jobs:
           echo "State Store: ${KOPS_STATE_STORE}"
           echo "Region: ${AWS_REGION}"
 
-          # Export kubecfg and validate
+          # Export kubecfg
           kops export kubecfg --name=${KOPS_CLUSTER_NAME} --state=${KOPS_STATE_STORE}
 
-          # Verify kubectl can connect
+      - name: Validate cluster is ready
+        run: |
+          echo "Validating cluster readiness..."
+
+          # Check if cluster is validated and ready
+          echo "Running kops validate cluster..."
+          if kops validate cluster --name=${KOPS_CLUSTER_NAME} --state=${KOPS_STATE_STORE}; then
+            echo "✅ Cluster validation successful"
+          else
+            echo "❌ Cluster validation failed - cluster may not be fully deployed"
+            echo "💡 You may need to run: kops update cluster --name=${KOPS_CLUSTER_NAME} --state=${KOPS_STATE_STORE} --yes"
+            echo "⚠️  Continuing anyway since you mentioned cluster is running..."
+          fi
+
+          # Check kubectl config
+          echo "Current kubectl config:"
+          kubectl config view --minify
+
+          # Test kubectl connection with more verbose output
           echo "Testing kubectl connection..."
-          kubectl cluster-info
+          kubectl cluster-info --request-timeout=30s || {
+            echo "❌ kubectl connection failed"
+            echo "🔍 Debugging information:"
+            echo "kubectl config current-context: $(kubectl config current-context)"
+            echo "kubectl config get-contexts: "
+            kubectl config get-contexts
+            
+            echo "💡 Possible solutions:"
+            echo "1. Check if API server security groups allow GitHub Actions IPs"
+            echo "2. Verify cluster is fully ready: kops validate cluster"
+            echo "3. Check if cluster uses different authentication (OIDC, etc.)"
+            exit 1
+          }
+
+          echo "Getting cluster nodes..."
           kubectl get nodes
 
       - name: Deploy Kubernetes manifests
